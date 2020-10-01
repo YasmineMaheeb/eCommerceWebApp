@@ -1,3 +1,4 @@
+
 package com.example.demo.controllers;
 
 import com.example.demo.TestUtils;
@@ -48,5 +49,23 @@ public class UserControllerTest {
         Assertions.assertEquals(0, user.getId());
         Assertions.assertEquals("test", user.getUsername());
         Assertions.assertEquals("hashedPassword", user.getPassword());
+    }
+
+    @Test
+    public void create_user_unhappy_path() {
+        CreateUserRequest request = new CreateUserRequest();
+        request.setUsername("test");
+        request.setPassword("password");
+        request.setConfirmPassword("different_password");
+        ResponseEntity<User> response = userController.createUser(request);
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(400, response.getStatusCodeValue());
+    }
+
+    @Test
+    public void test_get_invalid_username() {
+        when(userRepository.findByUsername("user2")).thenReturn(null);
+        ResponseEntity<User> user = userController.findByUserName("user2");
+        Assertions.assertEquals(404, user.getStatusCodeValue());
     }
 }
