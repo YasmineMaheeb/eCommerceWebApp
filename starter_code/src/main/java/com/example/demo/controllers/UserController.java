@@ -2,7 +2,6 @@ package com.example.demo.controllers;
 
 import java.util.Optional;
 
-import ch.qos.logback.classic.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +20,8 @@ import com.example.demo.model.persistence.User;
 import com.example.demo.model.persistence.repositories.CartRepository;
 import com.example.demo.model.persistence.repositories.UserRepository;
 import com.example.demo.model.requests.CreateUserRequest;
+
+import javax.persistence.EntityNotFoundException;
 
 @RestController
 @RequestMapping("/api/user")
@@ -41,7 +42,7 @@ public class UserController {
     public ResponseEntity<User> findById(@PathVariable Long id) {
         Optional<User> user = userRepository.findById(id);
         if (!user.isPresent()) {
-            debug("No user with this ID");
+            log.error("No user with this ID", new EntityNotFoundException());
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.of(user);
@@ -52,7 +53,7 @@ public class UserController {
         User user = userRepository.findByUsername(username);
         if (user != null)
             return ResponseEntity.ok(user);
-        debug("No user with this Name");
+        log.error("No user with this Name", new EntityNotFoundException());
         return ResponseEntity.notFound().build();
     }
 
@@ -66,20 +67,14 @@ public class UserController {
         user.setCart(cart);
         if (createUserRequest.getPassword().length() < 6 ||
                 !createUserRequest.getPassword().equals(createUserRequest.getConfirmPassword())) {
-            log.error("Error with user password. Can not create user {}", createUserRequest.getUsername());
+            log.debug("Error with user password. Can not create user {}", createUserRequest.getUsername());
             return ResponseEntity.badRequest().build();
         }
         user.setPassword(bCryptPasswordEncoder.encode(createUserRequest.getPassword()));
         userRepository.save(user);
+        log.info("User created with username {}!", createUserRequest.getUsername());
         return ResponseEntity.ok(user);
     }
 
-    public void debug(String message) {
-
-        ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
-        root.setLevel(ch.qos.logback.classic.Level.DEBUG);
-        log.debug(message);
-        root.setLevel(Level.INFO);
-    }
 
 }
