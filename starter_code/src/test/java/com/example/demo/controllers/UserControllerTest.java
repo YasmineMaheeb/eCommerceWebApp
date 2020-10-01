@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.junit.jupiter.api.*;
 
+import java.util.Optional;
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -67,5 +69,26 @@ public class UserControllerTest {
         when(userRepository.findByUsername("user2")).thenReturn(null);
         ResponseEntity<User> user = userController.findByUserName("user2");
         Assertions.assertEquals(404, user.getStatusCodeValue());
+    }
+
+    @Test
+    public void test_get_valid_username() {
+        when(userRepository.findByUsername("test")).thenReturn(CartControllerTest.getTestUser());
+        ResponseEntity<User> user = userController.findByUserName("test");
+        Assertions.assertEquals(200, user.getStatusCodeValue());
+    }
+
+    @Test
+    public void test_get_invalid_user_id() {
+        when(userRepository.findById(2l)).thenReturn(Optional.ofNullable(null));
+        ResponseEntity<User> user = userController.findById(2l);
+        Assertions.assertEquals(404, user.getStatusCodeValue());
+    }
+
+    @Test
+    public void test_get_valid_user_id() {
+        when(userRepository.findById(1l)).thenReturn(Optional.of(CartControllerTest.getTestUser()));
+        ResponseEntity<User> user = userController.findById(1l);
+        Assertions.assertEquals(200, user.getStatusCodeValue());
     }
 }

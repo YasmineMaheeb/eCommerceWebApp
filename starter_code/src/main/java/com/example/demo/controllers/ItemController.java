@@ -1,7 +1,9 @@
 package com.example.demo.controllers;
 
 import java.util.List;
+import java.util.Optional;
 
+import com.example.demo.model.persistence.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,14 +28,20 @@ public class ItemController {
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<Item> getItemById(@PathVariable Long id) {
-		return ResponseEntity.of(itemRepository.findById(id));
+		Optional<Item> item = itemRepository.findById(id);
+		if (!item.isPresent()) {
+			return ResponseEntity.notFound().build();
+		}
+		return ResponseEntity.of(item);
 	}
 	
 	@GetMapping("/name/{name}")
 	public ResponseEntity<List<Item>> getItemsByName(@PathVariable String name) {
 		List<Item> items = itemRepository.findByName(name);
-		return items == null || items.isEmpty() ? ResponseEntity.notFound().build()
-				: ResponseEntity.ok(items);
+		if(items.isEmpty()){
+			ResponseEntity.notFound().build();
+		}
+		return ResponseEntity.ok(items);
 			
 	}
 	
