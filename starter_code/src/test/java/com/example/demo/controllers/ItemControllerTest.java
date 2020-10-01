@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -42,5 +43,32 @@ public class ItemControllerTest {
         Assertions.assertEquals(200, items.getStatusCodeValue());
 
         Assertions.assertEquals(1, items.getBody().size());
+    }
+
+    @Test
+    public void get_items_by_invalid_name () {
+        List<Item> i = new ArrayList<Item>();
+        when(itemRepository.findByName("missing Widget")).thenReturn(i);
+        ResponseEntity<List<Item>> items = itemController.getItemsByName("missing Widget");
+        Assertions.assertNotNull(items);
+        Assertions.assertEquals(404, items.getStatusCodeValue());
+    }
+
+    @Test
+    public void get_items_by_id () {
+        Item i = new Item();
+        i.setId(1l);
+        when(itemRepository.findById(1l)).thenReturn(Optional.of(i));
+        ResponseEntity<Item> item = itemController.getItemById(1l);
+        Assertions.assertNotNull(item);
+        Assertions.assertEquals(200, item.getStatusCodeValue());
+    }
+
+    @Test
+    public void get_items_by_invalid_id () {
+        when(itemRepository.findById(2l)).thenReturn(Optional.ofNullable(null));
+        ResponseEntity<Item> item = itemController.getItemById(2l);
+        Assertions.assertNotNull(item);
+        Assertions.assertEquals(404, item.getStatusCodeValue());
     }
 }
